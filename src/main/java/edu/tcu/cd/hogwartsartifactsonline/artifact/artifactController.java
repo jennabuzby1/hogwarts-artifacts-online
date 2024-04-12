@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import static edu.tcu.cd.hogwartsartifactsonline.artifact.StatusCode.*;
 
 @RestController
-@RequestMapping("/api/v1/artifacts")
+@RequestMapping("${api.endpoint.base-url}/artifacts")
 public class artifactController {
 
     private final artifactService artifactService;
