@@ -6,6 +6,8 @@ import edu.tcu.cd.hogwartsartifactsonline.wizard.WizardRepository;
 import edu.tcu.cd.hogwartsartifactsonline.artifact.artifactRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.HogwartsUser;
+import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.UserRepository;
 
 @Component
 
@@ -15,11 +17,13 @@ public class DBDataInitializer implements CommandLineRunner {
 
     private final WizardRepository wizardRepository;
 
-    public DBDataInitializer(artifactRepository artifactRepository, WizardRepository wizardRepository) {
+    private final UserRepository userRepository;
+
+    public DBDataInitializer(artifactRepository artifactRepository, WizardRepository wizardRepository, UserRepository userRepository) {
         this.artifactRepository = artifactRepository;
         this.wizardRepository = wizardRepository;
+        this.userRepository = userRepository;
     }
-
     @Override
     public void run(String... args) throws Exception {
         artifact a1 = new artifact();
@@ -86,6 +90,31 @@ public class DBDataInitializer implements CommandLineRunner {
         wizardRepository.save(w3);
 
         artifactRepository.save(a6);
+
+        HogwartsUser u1 = new HogwartsUser();
+        u1.setId(1);
+        u1.setUsername("john");
+        u1.setPassword("123456");
+        u1.setEnabled(true);
+        u1.setRoles("admin user");
+
+        HogwartsUser u2 = new HogwartsUser();
+        u2.setId(2);
+        u2.setUsername("eric");
+        u2.setPassword("654321");
+        u2.setEnabled(true);
+        u2.setRoles("user");
+
+        HogwartsUser u3 = new HogwartsUser();
+        u3.setId(3);
+        u3.setUsername("tom");
+        u3.setPassword("qwerty");
+        u3.setEnabled(false);
+        u3.setRoles("user");
+
+        this.userRepository.save(u1);
+        this.userRepository.save(u2);
+        this.userRepository.save(u3);
 
     }
 
