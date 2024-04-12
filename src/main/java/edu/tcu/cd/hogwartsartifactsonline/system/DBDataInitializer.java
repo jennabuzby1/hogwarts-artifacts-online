@@ -7,22 +7,21 @@ import edu.tcu.cd.hogwartsartifactsonline.artifact.artifactRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.HogwartsUser;
-import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.UserRepository;
+import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.UserService;
+
 
 @Component
 
 public class DBDataInitializer implements CommandLineRunner {
-
-    private final artifactRepository artifactRepository;
-
     private final WizardRepository wizardRepository;
 
-    private final UserRepository userRepository;
+    private final artifactRepository artifactRepository;
+    private final UserService userService;
 
-    public DBDataInitializer(artifactRepository artifactRepository, WizardRepository wizardRepository, UserRepository userRepository) {
+    public DBDataInitializer(artifactRepository artifactRepository, WizardRepository wizardRepository, UserService userService) {
         this.artifactRepository = artifactRepository;
         this.wizardRepository = wizardRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
     @Override
     public void run(String... args) throws Exception {
@@ -112,11 +111,13 @@ public class DBDataInitializer implements CommandLineRunner {
         u3.setEnabled(false);
         u3.setRoles("user");
 
-        this.userRepository.save(u1);
-        this.userRepository.save(u2);
-        this.userRepository.save(u3);
+
+            this.userService.save(u1);
+            this.userService.save(u2);
+            this.userService.save(u3);
+        }
 
     }
 
 
-}
+
