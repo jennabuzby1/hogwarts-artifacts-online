@@ -60,7 +60,7 @@ public class artifactController {
     }
 
     @GetMapping
-    public Result findAllArtifacts() {
+    public Result findAllArtifacts(Pageable  pageable) {
         List<artifact> foundArtifacts = this.artifactService.findAll();
         // Convert foundArtifact to a list of artifactsDtos
 
