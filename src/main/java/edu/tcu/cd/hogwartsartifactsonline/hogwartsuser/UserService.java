@@ -2,12 +2,11 @@ package edu.tcu.cd.hogwartsartifactsonline.hogwartsuser;
 
 import edu.tcu.cd.hogwartsartifactsonline.system.exception.ObjectNotFoundException;
 import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -17,7 +16,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
@@ -35,11 +34,18 @@ public class UserService implements UserDetailsService {
     }
 
     public HogwartsUser save(HogwartsUser newHogwartsUser) {
+        // We NEED to encode plain text password before saving to the DB! TODO
         newHogwartsUser.setPassword(this.passwordEncoder.encode(newHogwartsUser.getPassword()));
         return this.userRepository.save(newHogwartsUser);
     }
 
-
+    /**
+     * We are not using this update to change user password.
+     *
+     * @param userId
+     * @param update
+     * @return
+     */
     public HogwartsUser update(Integer userId, HogwartsUser update) {
         HogwartsUser oldHogwartsUser = this.userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("user", userId));

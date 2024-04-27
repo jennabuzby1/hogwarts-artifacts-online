@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -66,22 +67,28 @@ public class SecurityConfiguration {
                 // It is recommended to secure your application at the API endpoint level.
                 .authorizeHttpRequests(authorizeHttpRequests -> authorizeHttpRequests
                         .requestMatchers(HttpMethod.GET, this.baseUrl + "/artifacts/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, this.baseUrl + "/artifacts/search").permitAll()
                         .requestMatchers(HttpMethod.GET, this.baseUrl + "/users/**").hasAuthority("ROLE_admin") // Protect the endpoint.
-                        .requestMatchers(HttpMethod.POST, this.baseUrl + "/users").hasAuthority("ROLE_admin")
-                        .requestMatchers(HttpMethod.PUT, this.baseUrl + "/users/**").hasAuthority("ROLE_admin")
-                        .requestMatchers(HttpMethod.DELETE, this.baseUrl + "/users/**").hasAuthority("ROLE_admin")
+                        .requestMatchers(HttpMethod.POST, this.baseUrl + "/users").hasAuthority("ROLE_admin") // Protect the endpoint.
+                        .requestMatchers(HttpMethod.PUT, this.baseUrl + "/users/**").hasAuthority("ROLE_admin") // Protect the endpoint.
+                        .requestMatchers(HttpMethod.DELETE, this.baseUrl + "/users/**").hasAuthority("ROLE_admin") // Protect the endpoint.
+                        .requestMatchers(EndpointRequest.to("health", "info", "prometheus")).permitAll()
+                        .requestMatchers(EndpointRequest.toAnyEndpoint().excluding("health", "info", "prometheus")).hasAuthority("ROLE_admin")
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll() // Explicitly fallback to antMatcher inside requestMatchers.
-
-                        .anyRequest().authenticated()
+                        // Disallow everything else.
+                        .anyRequest().authenticated() // Always a good idea to put this as last.
                 )
-                .headers(headers -> headers.frameOptions().disable())
+                .headers(headers -> headers.frameOptions(Customizer.withDefaults()).disable()) // This is for H2 browser console access.
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
                 .httpBasic(httpBasic -> httpBasic.authenticationEntryPoint(this.customBasicAuthenticationEntryPoint))
-                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt().and()
+                .oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer
+                        .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(this.customBearerTokenAuthenticationEntryPoint)
                         .accessDeniedHandler(this.customBearerTokenAccessDeniedHandler))
-
+                /* Configures the spring boot application as an OAuth2 Resource Server which authenticates all
+                 the incoming requests (except the ones excluded above) using JWT authentication.
+                 */
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
@@ -108,10 +115,16 @@ public class SecurityConfiguration {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
-
+        /*
+        Let’s say that that your authorization server communicates authorities in a custom claim called "authorities".
+        In that case, you can configure the claim that JwtAuthenticationConverter should inspect, like so:
+         */
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
 
-
+        /*
+        You can also configure the authority prefix to be different as well. The default one is "SCOPE_".
+        In this project, you need to change it to empty, that is, no prefix!
+         */
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
