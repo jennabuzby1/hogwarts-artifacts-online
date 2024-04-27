@@ -20,8 +20,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles(value = "dev")
 class UserServiceTest {
 
     @Mock
