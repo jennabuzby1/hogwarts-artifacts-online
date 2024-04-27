@@ -4,11 +4,27 @@ import edu.tcu.cd.hogwartsartifactsonline.artifact.converter.ArtifactDtoToArtifa
 import edu.tcu.cd.hogwartsartifactsonline.artifact.converter.ArtifactToArtifactDtoConverter;
 import edu.tcu.cd.hogwartsartifactsonline.artifact.dto.ArtifactDto;
 import edu.tcu.cd.hogwartsartifactsonline.system.Result;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.tcu.cd.hogwartsartifactsonline.artifact.converter.ArtifactDtoToArtifactConverter;
+import edu.tcu.cd.hogwartsartifactsonline.artifact.converter.ArtifactToArtifactDtoConverter;
+import edu.tcu.cd.hogwartsartifactsonline.artifact.dto.ArtifactDto;
+import edu.tcu.cd.hogwartsartifactsonline.system.Result;
+import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static edu.tcu.cd.hogwartsartifactsonline.artifact.StatusCode.*;
@@ -23,11 +39,14 @@ public class artifactController {
 
     private final ArtifactDtoToArtifactConverter artifactDtoToArtifactConverter;
 
+    private final MeterRegistry meterRegistry;
 
-    public artifactController(edu.tcu.cd.hogwartsartifactsonline.artifact.artifactService artifactService, ArtifactToArtifactDtoConverter artifactToArtifactDtoConverter, ArtifactDtoToArtifactConverter artifactDtoToArtifactConverter) {
+
+    public artifactController(edu.tcu.cd.hogwartsartifactsonline.artifact.artifactService artifactService, ArtifactToArtifactDtoConverter artifactToArtifactDtoConverter, ArtifactDtoToArtifactConverter artifactDtoToArtifactConverter, MeterRegistry meterRegistry) {
         this.artifactService = artifactService;
         this.artifactToArtifactDtoConverter = artifactToArtifactDtoConverter;
         this.artifactDtoToArtifactConverter = artifactDtoToArtifactConverter;
+        this.meterRegistry = meterRegistry;
     }
 
     @GetMapping("/{artifactId}")
@@ -77,4 +96,24 @@ public class artifactController {
 
         }
 
+    @GetMapping("/summary")
+    public Result summarizeArtifacts() throws JsonProcessingException {
+        List<artifact> foundArtifacts = this.artifactService.findAll();
+        // Convert foundArtifacts to a list of artifactDtos
+        List<ArtifactDto> artifactDtos = foundArtifacts.stream()
+                .map(this.artifactToArtifactDtoConverter::convert)
+                .collect(Collectors.toList());
+        String artifactSummary = this.artifactService.summarize(artifactDtos);
+        return new Result(true, edu.tcu.cd.hogwartsartifactsonline.artifact.StatusCode.SUCCESS, "Summarize Success", artifactSummary);
+    }
+
+    @PostMapping("/search")
+    public Result findArtifactsByCriteria(@RequestBody Map<String, String> searchCriteria, Pageable pageable) {
+        Page<artifact> artifactPage = this.artifactService.findByCriteria(searchCriteria, pageable);
+        Page<ArtifactDto> artifactDtoPage = artifactPage.map(this.artifactToArtifactDtoConverter::convert);
+        return new Result(true, edu.tcu.cd.hogwartsartifactsonline.artifact.StatusCode.SUCCESS, "Search Success", artifactDtoPage);
+    }
+
 }
+
+
