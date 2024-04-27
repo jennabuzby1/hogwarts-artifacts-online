@@ -1,18 +1,13 @@
 spring:
-  datasource:
-    url: jdbc:h2:mem:hogwarts
-    username: sa
-    password:
-    driver-class-name: org.h2.Driver
-  jpa:
-    show-sql: true
-  mvc:
-    throw-exeception-if-no-handler-found: true
+  profiles:
+    active: dev
+mvc:
+  throw-exeception-if-no-handler-found: true
   web:
     resources:
       add-mappings: false
-  api:
-    endpoint:
-      base-url: /api/v1
+api:
+  endpoint:
+     base-url: /api/v1
 server:
   port: 80

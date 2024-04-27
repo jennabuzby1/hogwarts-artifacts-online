@@ -5,12 +5,14 @@ import edu.tcu.cd.hogwartsartifactsonline.wizard.Wizard;
 import edu.tcu.cd.hogwartsartifactsonline.wizard.WizardRepository;
 import edu.tcu.cd.hogwartsartifactsonline.artifact.artifactRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.HogwartsUser;
 import edu.tcu.cd.hogwartsartifactsonline.hogwartsuser.UserService;
 
 
 @Component
+@Profile("dev")
 
 public class DBDataInitializer implements CommandLineRunner {
     private final WizardRepository wizardRepository;
